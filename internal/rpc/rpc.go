@@ -6,6 +6,7 @@ import (
 	"net"
 
 	"github.com/soulteary/go-nameparser/internal/bridge"
+	"github.com/soulteary/go-nameparser/internal/define"
 	pb "github.com/soulteary/go-nameparser/pkg/pb"
 	"google.golang.org/grpc"
 )
@@ -20,7 +21,7 @@ func (s *server) HumanName(ctx context.Context, in *pb.ConvertRequest) (*pb.Conv
 }
 
 func Launch() {
-	lis, err := net.Listen("tcp", ":50051")
+	lis, err := net.Listen("tcp", define.GRPC_PORT)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}

@@ -10,6 +10,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/soulteary/go-nameparser/internal/bridge"
+	"github.com/soulteary/go-nameparser/internal/define"
 )
 
 func Launch() {
@@ -44,7 +45,7 @@ func Launch() {
 	})
 
 	srv := &http.Server{
-		Addr:              ":8080",
+		Addr:              define.WEB_PORT,
 		Handler:           route,
 		ReadHeaderTimeout: time.Second * 10,
 		ReadTimeout:       time.Second * 10,
