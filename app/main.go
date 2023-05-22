@@ -1,12 +1,18 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
+	"net/http"
+	"os/signal"
 	"path/filepath"
+	"syscall"
+	"time"
 
 	python3 "github.com/datadog/go-python3"
+	"github.com/gin-gonic/gin"
 )
 
 func LoadModule(dir string) *python3.PyObject {
@@ -35,6 +41,15 @@ type HumanName struct {
 	} `json:"detail"`
 }
 
+func Parse(input string) (ret HumanName, err error) {
+	var name HumanName
+	err = json.Unmarshal([]byte(Convert(input)), &name)
+	if err != nil {
+		return ret, fmt.Errorf("Parsing JSON failed: %v", err)
+	}
+	return name, nil
+}
+
 func main() {
 	defer python3.Py_Finalize()
 	python3.Py_Initialize()
@@ -42,15 +57,60 @@ func main() {
 		log.Fatalln("Failed to initialize Python environment")
 	}
 
-	ret := Convert("Dr. Juan Q. Xavier de la Vega III (Doc Vega)")
+	gin.SetMode(gin.ReleaseMode)
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
 
-	var name HumanName
-	err := json.Unmarshal([]byte(ret), &name)
-	if err != nil {
-		fmt.Println("Parsing JSON failed:", err)
-		return
+	const ProjectInfo = `project: <a href="https://github.com/soulteary/go-nameparser">soulteary/go-nameparser</a>`
+
+	route := gin.Default()
+	route.GET("/", func(c *gin.Context) {
+		c.Data(http.StatusOK, "text/html", []byte(ProjectInfo))
+	})
+
+	type Data struct {
+		Name string `json:"name"`
 	}
 
-	fmt.Println("Name:", name.Text)
-	fmt.Println("Detail:", name.Detail)
+	route.POST("/api/convert", func(c *gin.Context) {
+		var data Data
+		if err := c.ShouldBindJSON(&data); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		result, err := Parse(data.Name)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, err)
+			return
+		}
+		c.JSON(http.StatusOK, result)
+	})
+
+	srv := &http.Server{
+		Addr:              ":8080",
+		Handler:           route,
+		ReadHeaderTimeout: time.Second * 10,
+		ReadTimeout:       time.Second * 10,
+	}
+
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("Program start error: %s\n", err)
+		}
+	}()
+	log.Println("soulteary/go-nameparser has started 🚀")
+
+	<-ctx.Done()
+
+	stop()
+	log.Println("The program is closing, if you want to end it immediately, please press `CTRL+C`")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Fatalf("Program was forced to close: %s\n", err)
+	}
+
+	log.Println("Look forward to meeting you again ❤️")
 }
