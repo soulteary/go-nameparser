@@ -57,6 +57,7 @@ func Launch() {
 		}
 	}()
 	log.Println("soulteary/go-nameparser has started 🚀")
+	log.Println("Web server is running at", define.WEB_PORT)
 
 	<-ctx.Done()
 
