@@ -15,11 +15,12 @@ ENV CGO_ENABLED=1
 # Set Golang Mirror
 ENV GOPROXY="https://goproxy.cn"
 # Copy source code
-RUN pip install nameparser
-COPY app /app
-WORKDIR /app
 # Install deps
+RUN pip install nameparser
+COPY ./go.* /app/
+WORKDIR /app
 RUN go mod tidy
+COPY . ./
 # Build the binary
 RUN go build -o HumanName
 

@@ -6,7 +6,7 @@ import (
 	"net"
 
 	"github.com/soulteary/go-nameparser/internal/bridge"
-	pb "github.com/soulteary/go-nameparser/internal/pb"
+	pb "github.com/soulteary/go-nameparser/pkg/pb"
 	"google.golang.org/grpc"
 )
 
