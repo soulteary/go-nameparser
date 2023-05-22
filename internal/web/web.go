@@ -1,62 +1,18 @@
-package main
+package web
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"os/signal"
-	"path/filepath"
 	"syscall"
 	"time"
 
-	python3 "github.com/datadog/go-python3"
 	"github.com/gin-gonic/gin"
+	"github.com/soulteary/go-nameparser/internal/bridge"
 )
 
-func LoadModule(dir string) *python3.PyObject {
-	path := python3.PyImport_ImportModule("sys").GetAttrString("path")
-	python3.PyList_Insert(path, 0, python3.PyUnicode_FromString(dir))
-	return python3.PyImport_ImportModule(filepath.Base(dir))
-}
-
-func Convert(input string) string {
-	module := LoadModule("./convert")
-	function := module.GetAttrString("Convert")
-	args := python3.PyTuple_New(1)
-	python3.PyTuple_SetItem(args, 0, python3.PyUnicode_FromString(input))
-	return python3.PyUnicode_AsUTF8(function.Call(args, python3.Py_None))
-}
-
-type HumanName struct {
-	Text   string `json:"text"`
-	Detail struct {
-		Title    string `json:"title"`
-		First    string `json:"first"`
-		Middle   string `json:"middle"`
-		Last     string `json:"last"`
-		Suffix   string `json:"suffix"`
-		Nickname string `json:"nickname"`
-	} `json:"detail"`
-}
-
-func Parse(input string) (ret HumanName, err error) {
-	var name HumanName
-	err = json.Unmarshal([]byte(Convert(input)), &name)
-	if err != nil {
-		return ret, fmt.Errorf("Parsing JSON failed: %v", err)
-	}
-	return name, nil
-}
-
-func main() {
-	defer python3.Py_Finalize()
-	python3.Py_Initialize()
-	if !python3.Py_IsInitialized() {
-		log.Fatalln("Failed to initialize Python environment")
-	}
-
+func Launch() {
 	gin.SetMode(gin.ReleaseMode)
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
@@ -79,7 +35,7 @@ func main() {
 			return
 		}
 
-		result, err := Parse(data.Name)
+		result, err := bridge.Parse(data.Name)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, err)
 			return

@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+option go_package = "./internal/pb";
+
+package pb;
+
+// The Converter service definition.
+service Converter {
+  // Sends a Converter request
+  rpc HumanName (ConvertRequest) returns (ConvertReply) {}
+}
+
+// The request message containing the name.
+message ConvertRequest {
+  string name = 1;
+}
+
+// The response message containing the name parsed
+message ConvertReply {
+  string message = 1;
+}
