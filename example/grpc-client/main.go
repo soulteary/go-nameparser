@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"flag"
 	"log"
 	"time"
 
@@ -18,7 +17,6 @@ const (
 )
 
 func main() {
-	flag.Parse()
 	// Set up a connection to the server.
 	conn, err := grpc.Dial(GrpcAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
@@ -32,7 +30,7 @@ func main() {
 	defer cancel()
 	r, err := c.HumanName(ctx, &pb.ConvertRequest{Name: TestName})
 	if err != nil {
-		log.Fatalf("could not greet: %v", err)
+		log.Fatalf("could not convert: %v", err)
 	}
-	log.Printf("Greeting: %s", r.GetMessage())
+	log.Printf("Result: %s", r.GetMessage())
 }
