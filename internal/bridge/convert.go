@@ -1,7 +1,7 @@
 package bridge
 
 import (
-	"github.com/datadog/go-python3"
+	"github.com/go-python/cpy3"
 )
 
 // LoadModule is a wrapper for python.LoadModule

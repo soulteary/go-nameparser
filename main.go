@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	python3 "github.com/datadog/go-python3"
+	python3 "github.com/go-python/cpy3"
 	"github.com/soulteary/go-nameparser/internal/rpc"
 	"github.com/soulteary/go-nameparser/internal/web"
 )

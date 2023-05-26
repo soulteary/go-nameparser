@@ -3,7 +3,7 @@ package bridge
 import (
 	"path/filepath"
 
-	python3 "github.com/datadog/go-python3"
+	python3 "github.com/go-python/cpy3"
 )
 
 func LoadModule(dir string) *python3.PyObject {
